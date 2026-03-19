@@ -1,8 +1,11 @@
 {
   "name": "narrator",
   "description": "Voice output for Claude Code using Kokoro TTS. Speaks responses, tool steps, and notifications aloud.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "Shreyas Rao"
-  }
+  },
+  "repository": "https://github.com/shreyas-s-rao/claude-code-narrator",
+  "license": "Apache-2.0",
+  "keywords": ["tts", "voice", "narrator", "kokoro", "accessibility"]
 }
