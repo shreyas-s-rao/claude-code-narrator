@@ -45,10 +45,10 @@ Turns off automatic voice output. Hooks will no longer trigger speech.
 ### Change Voice
 
 ```
-/narrator:voice am_adam
+/narrator:cast am_adam
 ```
 
-Or just `/narrator:voice` to see available voices and pick one.
+Or just `/narrator:cast` to see available voices and pick one.
 
 ### Speak On-Demand
 
@@ -132,7 +132,7 @@ narrator/
 ├── skills/
 │   ├── on/SKILL.md           # Enable narrator
 │   ├── off/SKILL.md          # Disable narrator
-│   ├── voice/SKILL.md        # Change voice
+│   ├── cast/SKILL.md          # Change voice
 │   ├── speak/SKILL.md        # On-demand speech
 │   └── hush/SKILL.md         # Silence immediately
 ├── LICENSE

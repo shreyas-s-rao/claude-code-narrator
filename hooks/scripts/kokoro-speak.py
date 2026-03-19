@@ -76,9 +76,6 @@ def ensure_venv():
 
 def speak(text):
     """Synthesize and play speech."""
-    # Use cached model files — skip HF Hub network calls.
-    os.environ.setdefault('HF_HUB_OFFLINE', '1')
-
     import kokoro
     import sounddevice as sd
     import numpy as np

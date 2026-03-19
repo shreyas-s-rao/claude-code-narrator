@@ -22,7 +22,7 @@ STATEEOF
 If the state file already exists and has voice/speed settings, preserve them -- only update `enabled=true`:
 
 ```bash
-sed -i '' 's/^enabled=.*/enabled=true/' /tmp/claude-narrator-state
+sed -i'' 's/^enabled=.*/enabled=true/' /tmp/claude-narrator-state
 ```
 
 ## Step 2: Confirm

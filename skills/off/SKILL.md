@@ -12,7 +12,7 @@ To disable narrator voice output:
 Modify the state file to disable narrator:
 
 ```bash
-sed -i '' 's/^enabled=.*/enabled=false/' /tmp/claude-narrator-state 2>/dev/null || echo "enabled=false" > /tmp/claude-narrator-state
+sed -i'' 's/^enabled=.*/enabled=false/' /tmp/claude-narrator-state 2>/dev/null || echo "enabled=false" > /tmp/claude-narrator-state
 ```
 
 If the state file does not exist, create it with `enabled=false`:

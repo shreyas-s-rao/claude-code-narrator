@@ -1,6 +1,6 @@
 ---
-name: voice
-description: This skill should be used when the user asks to "change narrator voice", "set voice", "list voices", "narrator voice", "switch voice", or wants to change the text-to-speech voice used by narrator.
+name: cast
+description: This skill should be used when the user asks to "change narrator voice", "set voice", "list voices", "narrator cast", "switch voice", "cast voice", or wants to change the text-to-speech voice used by narrator.
 ---
 
 # Change Narrator Voice
@@ -23,10 +23,10 @@ Kokoro provides these voices:
 
 ## Changing the Voice
 
-If the user specifies a voice name (e.g., `/narrator:voice am_adam`), update the state file:
+If the user specifies a voice name (e.g., `/narrator:cast am_adam`), update the state file:
 
 ```bash
-sed -i '' 's/^voice=.*/voice=VOICE_NAME/' /tmp/claude-narrator-state
+sed -i'' 's/^voice=.*/voice=VOICE_NAME/' /tmp/claude-narrator-state
 ```
 
 Replace `VOICE_NAME` with the requested voice identifier.
@@ -44,7 +44,7 @@ echo "This is how I sound with the new voice." | bash "${CLAUDE_PLUGIN_ROOT}/hoo
 If the user asks to change speed, update the speed value in the state file:
 
 ```bash
-sed -i '' 's/^speed=.*/speed=NEW_SPEED/' /tmp/claude-narrator-state
+sed -i'' 's/^speed=.*/speed=NEW_SPEED/' /tmp/claude-narrator-state
 ```
 
 Valid speed range: 0.5 to 2.0. Default is 1.1.
