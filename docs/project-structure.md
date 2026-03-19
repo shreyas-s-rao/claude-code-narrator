@@ -13,7 +13,8 @@ claude-code-narrator/
 │       ├── speak.sh           # Speech enqueuer (entry point)
 │       ├── speak-response.sh  # Stop hook (speaks responses)
 │       ├── speak-step.sh      # PostToolUse hook (speaks tool actions)
-│       └── speak-notification.sh  # Notification hook
+│       ├── speak-notification.sh  # Notification hook
+│       └── hush-on-input.sh      # UserPromptSubmit hook (auto-silence on input)
 ├── skills/
 │   ├── on/SKILL.md            # /narrator:on — enable narrator
 │   ├── off/SKILL.md           # /narrator:off — disable narrator

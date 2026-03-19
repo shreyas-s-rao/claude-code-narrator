@@ -79,6 +79,16 @@ case "$TOOL_NAME" in
     WebFetch|WebSearch)
         desc="Searching the web"
         ;;
+    AskUserQuestion)
+        # User just interacted — hush any queued/playing speech and exit.
+        if [[ -f /tmp/claude-speak-daemon.pid ]]; then
+            pid=$(cat /tmp/claude-speak-daemon.pid 2>/dev/null || echo "")
+            if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+                kill -USR1 "$pid" 2>/dev/null || true
+            fi
+        fi
+        exit 0
+        ;;
     Agent|Skill)
         desc="Delegating to sub-agent"
         ;;

@@ -37,6 +37,7 @@ Skills modify this file; hook scripts read it. This file-based approach is neces
 | **Response complete** | First ~300 characters of the assistant's reply (sentence-aligned) |
 | **Tool use** | Short description: "Reading file X", "Running git log", etc. |
 | **Notification** | The notification title and message |
+| **User input** | Speech is automatically silenced (daemon killed, FIFO cleared) |
 
 ## Speech Text Processing
 

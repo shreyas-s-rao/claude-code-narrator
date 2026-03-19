@@ -19,7 +19,29 @@ speed=1.1
 
 IMPORTANT: Do NOT use `sed` to edit the state file — use the Read and Edit tools instead.
 
-## Step 2: Confirm
+## Step 2: Register Auto-Hush Hook
+
+Read `~/.claude/settings.json`. If it does not have a `UserPromptSubmit` hook that runs `hush-on-input.sh`, add one. This hook silences speech when the user provides input.
+
+Use the Edit tool to add the following to the `hooks` object in `~/.claude/settings.json` (create the `hooks` key if it doesn't exist, and merge with any existing hooks):
+
+```json
+"UserPromptSubmit": [
+  {
+    "hooks": [
+      {
+        "type": "command",
+        "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/hush-on-input.sh",
+        "timeout": 3
+      }
+    ]
+  }
+]
+```
+
+IMPORTANT: Do NOT replace existing hooks — merge with them. Read the file first.
+
+## Step 3: Confirm
 
 Inform the user: "Narrator is now enabled. I will speak responses aloud using the af_heart voice."
 

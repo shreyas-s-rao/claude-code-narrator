@@ -13,7 +13,13 @@ Read `/tmp/claude-narrator-state`. If the file exists, use the Edit tool to chan
 
 IMPORTANT: Do NOT use `sed` to edit the state file — use the Read and Edit tools instead.
 
-## Step 2: Confirm
+## Step 2: Remove Auto-Hush Hook
+
+Read `~/.claude/settings.json`. If it has a `UserPromptSubmit` hook that runs `hush-on-input.sh`, remove that entire `UserPromptSubmit` entry from the `hooks` object. Preserve all other hooks.
+
+IMPORTANT: Do NOT remove other hooks — only remove the narrator `UserPromptSubmit` hook. Read the file first.
+
+## Step 3: Confirm
 
 Inform the user: "Narrator is now disabled. Voice output is off."
 
