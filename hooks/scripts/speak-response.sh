@@ -47,17 +47,37 @@ if [[ "$PERMISSION_MODE" == "plan" ]]; then
     # Plan mode: speak full cleaned text
     printf '%s\n' "$CLEANED" | bash "$SCRIPT_DIR/speak.sh"
 else
-    # Normal mode: first ~300 chars, ending at sentence boundary
-    if [[ ${#CLEANED} -le 300 ]]; then
+    # Normal mode: first ~1000 chars, ending at sentence boundary
+    if [[ ${#CLEANED} -le 1000 ]]; then
         SUMMARY="$CLEANED"
     else
-        # Try to find sentence boundary (. ! ?) within first 300 chars
-        SUMMARY=$(printf '%s\n' "$CLEANED" | cut -c1-350 | sed -E 's/([.!?])[[:space:]].*/\1/' | cut -c1-300)
-        # If no sentence boundary found (same length as input), cut at word boundary
-        if [[ ${#SUMMARY} -ge 299 ]]; then
-            SUMMARY=$(printf '%s\n' "$CLEANED" | cut -c1-300 | sed 's/[[:space:]][^[:space:]]*$//')
-            SUMMARY="${SUMMARY}..."
-        fi
+        # Take first 1050 chars, find last sentence boundary (. ! ?) within that
+        TRIMMED=$(printf '%s' "$CLEANED" | cut -c1-1050)
+        # Use awk to find the last sentence-ending punctuation followed by a space or EOL
+        SUMMARY=$(printf '%s' "$TRIMMED" | awk '{
+            s = s (NR>1 ? " " : "") $0
+        }
+        END {
+            # Find last sentence boundary within 1000 chars
+            best = 0
+            for (i = 1; i <= length(s) && i <= 1000; i++) {
+                c = substr(s, i, 1)
+                if (c == "." || c == "!" || c == "?") {
+                    # Check next char is space, newline, or end of string
+                    if (i == length(s) || substr(s, i+1, 1) == " " || substr(s, i+1, 1) == "\n") {
+                        best = i
+                    }
+                }
+            }
+            if (best > 0) {
+                print substr(s, 1, best)
+            } else {
+                # No sentence boundary — cut at word boundary
+                t = substr(s, 1, 1000)
+                sub(/[[:space:]][^[:space:]]*$/, "", t)
+                print t "..."
+            }
+        }')
     fi
     printf '%s\n' "$SUMMARY" | bash "$SCRIPT_DIR/speak.sh"
 fi
