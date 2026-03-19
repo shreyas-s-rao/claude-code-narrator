@@ -2,31 +2,61 @@
 
 A Claude Code plugin that speaks responses aloud using [Kokoro](https://github.com/hexgrad/kokoro) TTS, a local neural text-to-speech engine. No cloud APIs, no latency — everything runs on your machine.
 
-## Installation
-
-### Prerequisites
+## Prerequisites
 
 - Python 3.9+ (tested on 3.13)
 - macOS with audio output (speakers or headphones)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
 
-### Load the Plugin
+## Installation
+
+### From GitHub (recommended)
+
+In Claude Code, run these slash commands:
+
+1. Add the marketplace:
+   ```
+   /plugin marketplace add
+   ```
+   Select **"Add from GitHub"**, then enter: `shreyas-s-rao/claude-code-narrator`
+
+2. Install the plugin:
+   ```
+   /plugin install narrator
+   ```
+
+3. Reload:
+   ```
+   /reload-plugins
+   ```
+
+### From local directory
+
+If you've cloned the repo locally:
+
+1. Add the marketplace:
+   ```
+   /plugin marketplace add
+   ```
+   Select **"Add from local path"**, then enter the path to your clone
+
+2. Install and reload as above
+
+### Direct plugin loading (development)
 
 ```bash
 claude --plugin-dir /path/to/claude-code-narrator
 ```
 
-Or add to your Claude Code settings for permanent use:
+## Getting Started
 
-```json
-{
-  "plugins": ["/path/to/claude-code-narrator"]
-}
-```
+1. **Enable narrator**: Type `/narrator:on` in Claude Code
+2. Kokoro TTS and all dependencies are **automatically installed** into a dedicated venv (`~/.claude-narrator-venv`) on first run. This takes a few minutes.
+3. Once installed, the narrator speaks tool steps and responses aloud.
+4. **Change voice**: `/narrator:cast af_bella` (or any voice from the table below)
+5. **Silence**: `/narrator:hush` to stop current speech, `/narrator:off` to disable entirely
 
-Kokoro TTS and all its dependencies are **automatically installed** into a dedicated venv (`~/.claude-narrator-venv`) the first time you run `/narrator:on`. No manual setup required.
-
-## Usage
+## Commands
 
 | Command | Description |
 |---------|-------------|
@@ -35,8 +65,6 @@ Kokoro TTS and all its dependencies are **automatically installed** into a dedic
 | `/narrator:cast [voice]` | Change voice or list available voices |
 | `/narrator:speak [text]` | Speak on demand, even if narrator is off |
 | `/narrator:hush` | Silence all current and queued speech |
-
-See [docs/commands.md](docs/commands.md) for detailed usage and examples.
 
 ## Available Voices
 
@@ -51,23 +79,26 @@ See [docs/commands.md](docs/commands.md) for detailed usage and examples.
 | `am_michael` | Male | Warm, friendly |
 | `am_fenrir` | Male | Bold, commanding |
 
+## What Gets Spoken
+
+| Event | What you hear |
+|-------|---------------|
+| Tool use (Read, Write, Bash, etc.) | Short description, e.g. "Reading file settings dot json" |
+| Text between tool calls | The assistant's intermediate commentary |
+| Final response | First ~1000 characters, ending at a sentence boundary |
+| Notification | Title and message from Claude Code notifications |
+| User input | Speech is automatically silenced when you type or click |
+
 ## Testing
 
 ```bash
 bash tests/run-all.sh
 ```
 
-Or run individual test suites:
-
-```bash
-bash tests/test-dot-replacement.sh     # Filename dots spoken as "dot" (e.g. "settings dot json")
-bash tests/test-command-extraction.sh   # Tool use speaks only program + subcommand
-```
-
 ## Documentation
 
 - [Architecture](docs/architecture.md) — pipeline diagram, state management, what gets spoken
-- [Commands](docs/commands.md) — detailed reference for each skill
+- [Commands](docs/commands.md) — detailed reference for each command
 - [Project Structure](docs/project-structure.md) — full directory tree with file descriptions
 
 ## License
