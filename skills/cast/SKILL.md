@@ -23,13 +23,9 @@ Kokoro provides these voices:
 
 ## Changing the Voice
 
-If the user specifies a voice name (e.g., `/narrator:cast am_adam`), update the state file:
+If the user specifies a voice name (e.g., `/narrator:cast am_adam`), read `/tmp/claude-narrator-state` and use the Edit tool to change the `voice=` line to the requested voice.
 
-```bash
-sed -i'' 's/^voice=.*/voice=VOICE_NAME/' /tmp/claude-narrator-state
-```
-
-Replace `VOICE_NAME` with the requested voice identifier.
+IMPORTANT: Do NOT use `sed` to edit the state file — use the Read and Edit tools instead.
 
 If the user does not specify a voice, present the list above and ask which voice they would like to use.
 
@@ -41,10 +37,8 @@ echo "This is how I sound with the new voice." | bash "${CLAUDE_PLUGIN_ROOT}/hoo
 
 ## Changing Speed
 
-If the user asks to change speed, update the speed value in the state file:
+If the user asks to change speed, read `/tmp/claude-narrator-state` and use the Edit tool to change the `speed=` line to the new value.
 
-```bash
-sed -i'' 's/^speed=.*/speed=NEW_SPEED/' /tmp/claude-narrator-state
-```
+IMPORTANT: Do NOT use `sed` to edit the state file — use the Read and Edit tools instead.
 
 Valid speed range: 0.5 to 2.0. Default is 1.1.

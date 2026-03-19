@@ -9,21 +9,15 @@ To enable narrator voice output, perform the following steps in order:
 
 ## Step 1: Enable Narrator State
 
-Write the state file to enable narrator:
+Read `/tmp/claude-narrator-state`. If the file exists, use the Edit tool to change the `enabled=` line to `enabled=true` (preserve the existing voice and speed settings). If the file does not exist, create it with the Write tool:
 
-```bash
-cat > /tmp/claude-narrator-state << 'STATEEOF'
+```
 enabled=true
 voice=af_heart
 speed=1.1
-STATEEOF
 ```
 
-If the state file already exists and has voice/speed settings, preserve them -- only update `enabled=true`:
-
-```bash
-sed -i'' 's/^enabled=.*/enabled=true/' /tmp/claude-narrator-state
-```
+IMPORTANT: Do NOT use `sed` to edit the state file — use the Read and Edit tools instead.
 
 ## Step 2: Confirm
 

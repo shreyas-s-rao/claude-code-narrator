@@ -31,6 +31,12 @@ if [[ -z "${text// /}" ]]; then
     exit 0
 fi
 
+# Replace dots in filename-like words (e.g. "settings.json" → "settings dot json")
+# so TTS doesn't treat the dot as a sentence boundary.
+# Requires 2+ chars before the dot to avoid mangling abbreviations like "e.g." or "i.e."
+# Second pass catches residual chained segments (e.g. "dot d.ts" from "types.d.ts").
+text=$(echo "$text" | sed -E 's/([a-zA-Z0-9_-]{2,})\.([a-zA-Z]{1,10})/\1 dot \2/g; s/(dot [a-zA-Z0-9_-]+)\.([a-zA-Z]{1,10})/\1 dot \2/g')
+
 # Check enabled state (unless --force)
 if [[ "$FORCE" != "true" ]]; then
     enabled="false"
