@@ -4,8 +4,9 @@
 # daemon alive so subsequent speech doesn't need a cold restart.
 # Registered as a UserPromptSubmit hook.
 
-PID_FILE="/tmp/claude-speak-daemon.pid"
-STATE_FILE="/tmp/claude-narrator-state"
+NARRATOR_DIR="$HOME/.claude-code-narrator"
+PID_FILE="$NARRATOR_DIR/daemon.pid"
+STATE_FILE="$NARRATOR_DIR/state"
 
 # Only act if narrator is enabled
 enabled="false"

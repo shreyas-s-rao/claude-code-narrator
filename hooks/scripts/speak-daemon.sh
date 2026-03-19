@@ -5,8 +5,10 @@
 
 set -euo pipefail
 
-FIFO="/tmp/claude-speak-fifo"
-PID_FILE="/tmp/claude-speak-daemon.pid"
+NARRATOR_DIR="$HOME/.claude-code-narrator"
+mkdir -p "$NARRATOR_DIR"
+FIFO="$NARRATOR_DIR/fifo"
+PID_FILE="$NARRATOR_DIR/daemon.pid"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_PYTHON="$HOME/.claude-narrator-venv/bin/python3"
 

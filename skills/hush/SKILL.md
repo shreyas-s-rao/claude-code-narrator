@@ -13,16 +13,16 @@ Run the following commands to kill all speech processes and clean up:
 
 ```bash
 # Kill the speak daemon if running
-if [ -f /tmp/claude-speak-daemon.pid ]; then
-    kill $(cat /tmp/claude-speak-daemon.pid) 2>/dev/null || true
-    rm -f /tmp/claude-speak-daemon.pid
+if [ -f ~/.claude-code-narrator/daemon.pid ]; then
+    kill $(cat ~/.claude-code-narrator/daemon.pid) 2>/dev/null || true
+    rm -f ~/.claude-code-narrator/daemon.pid
 fi
 
 # Kill any running kokoro-speak.py processes
 pkill -f kokoro-speak.py 2>/dev/null || true
 
 # Remove the FIFO to clear any queued messages
-rm -f /tmp/claude-speak-fifo
+rm -f ~/.claude-code-narrator/fifo
 ```
 
 ## After Hushing

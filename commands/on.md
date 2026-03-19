@@ -9,7 +9,7 @@ To enable narrator voice output, perform the following steps in order:
 
 ## Step 1: Enable Narrator State
 
-Read `/tmp/claude-narrator-state`. If the file exists, use the Edit tool to change the `enabled=` line to `enabled=true` (preserve the existing voice and speed settings). If the file does not exist, create it with the Write tool:
+Read `~/.claude-code-narrator/state`. If the file exists, use the Edit tool to change the `enabled=` line to `enabled=true` (preserve the existing voice and speed settings). If the file does not exist, create it with the Write tool:
 
 ```
 enabled=true

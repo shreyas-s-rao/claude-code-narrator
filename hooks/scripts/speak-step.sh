@@ -23,7 +23,7 @@ fi
 # Narrate any preceding text block from the transcript.
 # When Claude outputs text → tool_use, the text block has no hook.
 # We find the last unspoken text block in the transcript and speak it.
-SPOKEN_FILE="/tmp/claude-narrator-last-spoken"
+SPOKEN_FILE="$HOME/.claude-code-narrator/last-spoken"
 if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
     preceding_text=$(tail -60 "$TRANSCRIPT_PATH" | SPOKEN_FILE="$SPOKEN_FILE" python3 -c "
 import sys, json, os
@@ -120,8 +120,8 @@ case "$TOOL_NAME" in
         ;;
     AskUserQuestion)
         # User just interacted — hush any queued/playing speech and exit.
-        if [[ -f /tmp/claude-speak-daemon.pid ]]; then
-            pid=$(cat /tmp/claude-speak-daemon.pid 2>/dev/null || echo "")
+        if [[ -f "$HOME/.claude-code-narrator/daemon.pid" ]]; then
+            pid=$(cat "$HOME/.claude-code-narrator/daemon.pid" 2>/dev/null || echo "")
             if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
                 kill -USR1 "$pid" 2>/dev/null || true
             fi

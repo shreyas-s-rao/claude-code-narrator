@@ -7,7 +7,7 @@ Enable narrator voice output. Hooks will automatically speak responses, tool act
 On first run, Kokoro TTS and all dependencies are auto-installed into a dedicated venv (`~/.claude-narrator-venv`). This may take a few minutes.
 
 **What it does:**
-1. Writes `enabled=true` to the state file (`/tmp/claude-narrator-state`), preserving existing voice and speed settings
+1. Writes `enabled=true` to the state file (`~/.claude-code-narrator/state`), preserving existing voice and speed settings
 2. Speaks a test confirmation ("Narrator is now active") to verify audio is working
 
 **Example:**

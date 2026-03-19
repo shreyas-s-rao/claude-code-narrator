@@ -20,7 +20,7 @@ The speech daemon keeps the Kokoro TTS pipeline loaded in memory. After a ~10s c
 
 ## State Management
 
-Narrator state is stored in `/tmp/claude-narrator-state`:
+Narrator state is stored in `~/.claude-code-narrator/state`:
 
 ```
 enabled=true
@@ -34,7 +34,7 @@ Skills modify this file; hook scripts read it. This file-based approach is neces
 
 | Event | What's spoken |
 |-------|--------------|
-| **Response complete** | First ~300 characters of the assistant's reply (sentence-aligned) |
+| **Response complete** | First ~1000 characters of the assistant's reply (sentence-aligned) |
 | **Tool use** | Short description: "Reading file X", "Running git log", etc. |
 | **Notification** | The notification title and message |
 | **User input** | Speech is automatically silenced (daemon killed, FIFO cleared) |

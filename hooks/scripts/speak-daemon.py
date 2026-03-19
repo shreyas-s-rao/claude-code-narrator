@@ -10,8 +10,9 @@ import os
 import signal
 import time
 
-STATE_FILE = '/tmp/claude-narrator-state'
-PID_FILE = '/tmp/claude-speak-daemon.pid'
+NARRATOR_DIR = os.path.expanduser('~/.claude-code-narrator')
+STATE_FILE = os.path.join(NARRATOR_DIR, 'state')
+PID_FILE = os.path.join(NARRATOR_DIR, 'daemon.pid')
 
 
 def read_state(key, default):

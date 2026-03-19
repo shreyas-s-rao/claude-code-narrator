@@ -6,9 +6,11 @@
 
 set -euo pipefail
 
-FIFO="/tmp/claude-speak-fifo"
-PID_FILE="/tmp/claude-speak-daemon.pid"
-STATE_FILE="/tmp/claude-narrator-state"
+NARRATOR_DIR="$HOME/.claude-code-narrator"
+mkdir -p "$NARRATOR_DIR"
+FIFO="$NARRATOR_DIR/fifo"
+PID_FILE="$NARRATOR_DIR/daemon.pid"
+STATE_FILE="$NARRATOR_DIR/state"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 FORCE=false
@@ -57,7 +59,7 @@ if [[ -f "$PID_FILE" ]]; then
     fi
 fi
 
-LOCK_DIR="/tmp/claude-speak-daemon.lock"
+LOCK_DIR="$NARRATOR_DIR/daemon.lock"
 if [[ "$daemon_running" != "true" ]]; then
     # Use mkdir as an atomic lock to prevent concurrent daemon starts
     if mkdir "$LOCK_DIR" 2>/dev/null; then
