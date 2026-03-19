@@ -16,7 +16,10 @@ cleanup() {
 }
 trap cleanup SIGTERM SIGINT EXIT
 
-# Create FIFO if it doesn't exist
+# Ensure FIFO exists and is a named pipe (not a regular file)
+if [[ -e "$FIFO" && ! -p "$FIFO" ]]; then
+    rm -f "$FIFO"
+fi
 mkfifo "$FIFO" 2>/dev/null || true
 
 # Use venv python if available, otherwise system python3

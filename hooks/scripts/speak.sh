@@ -66,7 +66,10 @@ if [[ "$daemon_running" != "true" ]]; then
         if [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
             rmdir "$LOCK_DIR" 2>/dev/null || true
         else
-            # Create FIFO if it doesn't exist
+            # Ensure FIFO exists and is a named pipe (not a regular file)
+            if [[ -e "$FIFO" && ! -p "$FIFO" ]]; then
+                rm -f "$FIFO"
+            fi
             mkfifo "$FIFO" 2>/dev/null || true
             # Start daemon in background (loads TTS pipeline — takes ~10s on first start)
             nohup bash "$SCRIPT_DIR/speak-daemon.sh" >/dev/null 2>&1 &
