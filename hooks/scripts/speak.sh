@@ -33,11 +33,51 @@ if [[ -z "${text//[[:space:]]/}" ]]; then
     exit 0
 fi
 
+# ── TTS-friendly text replacements ──
+# Make symbols, markdown, and abbreviations sound natural when spoken aloud.
+
+# Abbreviations (before dot replacement to avoid "e dot g")
+text="${text//e.g./for example}"
+text="${text//i.e./that is}"
+
 # Replace dots in filename-like words (e.g. "settings.json" → "settings dot json")
 # so TTS doesn't treat the dot as a sentence boundary.
-# Requires 2+ chars before the dot to avoid mangling abbreviations like "e.g." or "i.e."
+# Requires 2+ chars before the dot to avoid mangling abbreviations.
 # Second pass catches residual chained segments (e.g. "dot d.ts" from "types.d.ts").
 text=$(printf '%s\n' "$text" | sed -E 's/([a-zA-Z0-9_-]{2,})\.([a-zA-Z]{1,10})/\1 dot \2/g; s/(dot [a-zA-Z0-9_-]+)\.([a-zA-Z]{1,10})/\1 dot \2/g')
+
+# Arrows and symbols
+text="${text//→/ to }"
+text="${text//=>/ arrow }"
+text="${text//->/ arrow }"
+text="${text//<=/ less or equal }"
+text="${text//>=/ greater or equal }"
+text="${text//!=/ not equal }"
+text="${text//==/ equals }"
+text="${text//&&/ and }"
+text="${text//||/ or }"
+
+# Paths and env vars
+text="${text//\~\//home slash }"
+text="${text//\$HOME/home}"
+text="${text//\/dev\/null/dev null}"
+
+# Shorthand
+text="${text//w\/o /without }"
+text="${text// w\// with }"
+
+# Technical terms
+text="${text//stderr/standard error}"
+text="${text//stdout/standard output}"
+
+# Markdown noise — strip backticks, bold markers, heading markers
+text=$(printf '%s\n' "$text" | sed -E 's/`//g; s/\*\*//g; s/^#{1,6} //g')
+
+# Ellipsis — collapse to single space (avoids TTS stutter)
+text="${text//.../ }"
+
+# Pipe — replace with comma for natural pause (only freestanding pipes)
+text=$(printf '%s\n' "$text" | sed -E 's/ \| /, /g')
 
 # Check enabled state (unless --force)
 if [[ "$FORCE" != "true" ]]; then
