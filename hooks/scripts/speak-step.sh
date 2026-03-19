@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Read hook input
 HOOK_INPUT=$(cat)
 
-TOOL_NAME=$(echo "$HOOK_INPUT" | jq -r '.tool_name // ""')
-TOOL_INPUT=$(echo "$HOOK_INPUT" | jq -r '.tool_input // ""')
+TOOL_NAME=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.tool_name // ""')
+TOOL_INPUT=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.tool_input // ""')
 
 if [[ -z "$TOOL_NAME" ]]; then
     exit 0
@@ -19,7 +19,7 @@ fi
 # Generate description based on tool name
 case "$TOOL_NAME" in
     Read)
-        file_path=$(echo "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
+        file_path=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
         if [[ -n "$file_path" ]]; then
             desc="Reading file $(basename "$file_path")"
         else
@@ -27,7 +27,7 @@ case "$TOOL_NAME" in
         fi
         ;;
     Write)
-        file_path=$(echo "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
+        file_path=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
         if [[ -n "$file_path" ]]; then
             desc="Writing file $(basename "$file_path")"
         else
@@ -35,7 +35,7 @@ case "$TOOL_NAME" in
         fi
         ;;
     Edit|MultiEdit)
-        file_path=$(echo "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
+        file_path=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
         if [[ -n "$file_path" ]]; then
             desc="Editing file $(basename "$file_path")"
         else
@@ -43,29 +43,12 @@ case "$TOOL_NAME" in
         fi
         ;;
     Bash)
-        command=$(echo "$TOOL_INPUT" | jq -r '.command // ""' 2>/dev/null || echo "")
+        command=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.command // ""' 2>/dev/null || echo "")
         if [[ -n "$command" ]]; then
-            # Extract just the program name and subcommand (first 2 non-flag words).
-            # e.g. "git log --oneline -3" → "git log"
-            #      "python3 -m pip install kokoro" → "python3 pip"
-            #      "npm install --save-dev foo" → "npm install"
-            words=()
-            for word in $command; do
-                [[ ${#words[@]} -ge 2 ]] && break
-                [[ "$word" == -* ]] && continue
-                words+=("$word")
-            done
-            # Commands without subcommands — only speak the program name.
-            case "${words[0]:-}" in
-                ls|cat|rm|cp|mv|mkdir|rmdir|touch|echo|printf|head|tail|sed|awk|grep|find|sort|wc|chmod|chown|kill|pkill|sleep|curl|wget|which|env|export|source|cd|pwd|date|whoami|hostname|uname|df|du|tar|zip|unzip|man|less|more|diff|patch|xargs|tee|tr|cut|ln|test|true|false|time|nohup|timeout|mkfifo)
-                    words=("${words[0]}")
-                    ;;
-            esac
-            if [[ ${#words[@]} -gt 0 ]]; then
-                desc="Running ${words[*]}"
-            else
-                desc="Running a command"
-            fi
+            # shellcheck source=hooks/scripts/extract-command.sh
+            source "$SCRIPT_DIR/extract-command.sh"
+            extract_command_desc "$command"
+            desc="$COMMAND_DESC"
         else
             desc="Running a command"
         fi
@@ -102,4 +85,4 @@ case "$TOOL_NAME" in
         ;;
 esac
 
-echo "$desc" | bash "$SCRIPT_DIR/speak.sh"
+printf '%s\n' "$desc" | bash "$SCRIPT_DIR/speak.sh"

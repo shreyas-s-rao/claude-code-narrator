@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tests for the Bash command extraction in speak-step.sh.
+# Tests for the Bash command extraction in extract-command.sh.
 # Run: bash tests/test-command-extraction.sh
 
 set -euo pipefail
@@ -7,40 +7,28 @@ set -euo pipefail
 PASS=0
 FAIL=0
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Source the shared extraction function
+source "$REPO_DIR/hooks/scripts/extract-command.sh"
+
 assert_eq() {
     local description="$1"
     local command="$2"
     local expected="$3"
 
-    local actual
-    actual=$(bash -c '
-        command="$1"
-        words=()
-        for word in $command; do
-            [[ ${#words[@]} -ge 2 ]] && break
-            [[ "$word" == -* ]] && continue
-            words+=("$word")
-        done
-        case "${words[0]:-}" in
-            ls|cat|rm|cp|mv|mkdir|rmdir|touch|echo|printf|head|tail|sed|awk|grep|find|sort|wc|chmod|chown|kill|pkill|sleep|curl|wget|which|env|export|source|cd|pwd|date|whoami|hostname|uname|df|du|tar|zip|unzip|man|less|more|diff|patch|xargs|tee|tr|cut|ln|test|true|false|time|nohup|timeout|mkfifo)
-                words=("${words[0]}")
-                ;;
-        esac
-        if [[ ${#words[@]} -gt 0 ]]; then
-            echo "Running ${words[*]}"
-        else
-            echo "Running a command"
-        fi
-    ' -- "$command")
+    extract_command_desc "$command"
+    local actual="$COMMAND_DESC"
 
     if [[ "$actual" == "$expected" ]]; then
-        echo "  PASS: $description"
+        printf '  PASS: %s\n' "$description"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL: $description"
-        echo "        input:    \"$command\""
-        echo "        expected: \"$expected\""
-        echo "        actual:   \"$actual\""
+        printf '  FAIL: %s\n' "$description"
+        printf '        input:    "%s"\n' "$command"
+        printf '        expected: "%s"\n' "$expected"
+        printf '        actual:   "%s"\n' "$actual"
         FAIL=$((FAIL + 1))
     fi
 }

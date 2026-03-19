@@ -27,7 +27,7 @@ else
 fi
 
 # Skip if text is empty/whitespace
-if [[ -z "${text// /}" ]]; then
+if [[ -z "${text//[[:space:]]/}" ]]; then
     exit 0
 fi
 
@@ -35,7 +35,7 @@ fi
 # so TTS doesn't treat the dot as a sentence boundary.
 # Requires 2+ chars before the dot to avoid mangling abbreviations like "e.g." or "i.e."
 # Second pass catches residual chained segments (e.g. "dot d.ts" from "types.d.ts").
-text=$(echo "$text" | sed -E 's/([a-zA-Z0-9_-]{2,})\.([a-zA-Z]{1,10})/\1 dot \2/g; s/(dot [a-zA-Z0-9_-]+)\.([a-zA-Z]{1,10})/\1 dot \2/g')
+text=$(printf '%s\n' "$text" | sed -E 's/([a-zA-Z0-9_-]{2,})\.([a-zA-Z]{1,10})/\1 dot \2/g; s/(dot [a-zA-Z0-9_-]+)\.([a-zA-Z]{1,10})/\1 dot \2/g')
 
 # Check enabled state (unless --force)
 if [[ "$FORCE" != "true" ]]; then
@@ -57,27 +57,48 @@ if [[ -f "$PID_FILE" ]]; then
     fi
 fi
 
+LOCK_DIR="/tmp/claude-speak-daemon.lock"
 if [[ "$daemon_running" != "true" ]]; then
-    # Create FIFO if it doesn't exist
-    mkfifo "$FIFO" 2>/dev/null || true
-    # Start daemon in background (loads TTS pipeline — takes ~10s on first start)
-    nohup bash "$SCRIPT_DIR/speak-daemon.sh" >/dev/null 2>&1 &
-    disown
-    # Wait for daemon to open the FIFO (pipeline loading takes time)
-    for i in $(seq 1 30); do
+    # Use mkdir as an atomic lock to prevent concurrent daemon starts
+    if mkdir "$LOCK_DIR" 2>/dev/null; then
+        trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
+        # Re-check after acquiring lock — another invocation may have started the daemon
         if [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
-            break
+            rmdir "$LOCK_DIR" 2>/dev/null || true
+        else
+            # Create FIFO if it doesn't exist
+            mkfifo "$FIFO" 2>/dev/null || true
+            # Start daemon in background (loads TTS pipeline — takes ~10s on first start)
+            nohup bash "$SCRIPT_DIR/speak-daemon.sh" >/dev/null 2>&1 &
+            disown
+            # Wait for daemon to open the FIFO (pipeline loading takes time)
+            for i in $(seq 1 30); do
+                if [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
+                    break
+                fi
+                sleep 0.5
+            done
+            rmdir "$LOCK_DIR" 2>/dev/null || true
         fi
-        sleep 0.5
-    done
+    else
+        # Another invocation holds the lock — wait for daemon to become ready
+        for i in $(seq 1 30); do
+            if [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE" 2>/dev/null)" 2>/dev/null; then
+                break
+            fi
+            sleep 0.5
+        done
+    fi
 fi
 
 # Write text to FIFO (with timeout in case daemon died)
 if command -v timeout >/dev/null 2>&1; then
-    timeout 5 bash -c "printf '%s\n' $(printf '%q' "$text") > '$FIFO'" 2>/dev/null || true
+    timeout 5 bash -c 'printf "%s\n" "$1" > "$2"' -- "$text" "$FIFO" 2>/dev/null || true
 else
     printf '%s\n' "$text" > "$FIFO" &
     write_pid=$!
-    sleep 5 && kill "$write_pid" 2>/dev/null &
+    { sleep 5; kill "$write_pid" 2>/dev/null; } &
+    killer_pid=$!
     wait "$write_pid" 2>/dev/null || true
+    kill "$killer_pid" 2>/dev/null; wait "$killer_pid" 2>/dev/null || true
 fi

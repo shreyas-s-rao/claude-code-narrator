@@ -14,7 +14,7 @@ for test_file in "$SCRIPT_DIR"/test-*.sh; do
     if bash "$test_file"; then
         echo ""
     else
-        ((TOTAL_FAIL++))
+        TOTAL_FAIL=$((TOTAL_FAIL + 1))
         echo ""
     fi
 done

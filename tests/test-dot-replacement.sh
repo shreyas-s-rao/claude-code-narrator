@@ -13,7 +13,7 @@ assert_eq() {
     local expected="$3"
 
     local actual
-    actual=$(echo "$input" | sed -E 's/([a-zA-Z0-9_-]{2,})\.([a-zA-Z]{1,10})/\1 dot \2/g; s/(dot [a-zA-Z0-9_-]+)\.([a-zA-Z]{1,10})/\1 dot \2/g')
+    actual=$(printf '%s\n' "$input" | sed -E 's/([a-zA-Z0-9_-]{2,})\.([a-zA-Z]{1,10})/\1 dot \2/g; s/(dot [a-zA-Z0-9_-]+)\.([a-zA-Z]{1,10})/\1 dot \2/g')
 
     if [[ "$actual" == "$expected" ]]; then
         echo "  PASS: $description"
