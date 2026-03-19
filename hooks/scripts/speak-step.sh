@@ -45,12 +45,27 @@ case "$TOOL_NAME" in
     Bash)
         command=$(echo "$TOOL_INPUT" | jq -r '.command // ""' 2>/dev/null || echo "")
         if [[ -n "$command" ]]; then
-            # Truncate to first 60 chars
-            truncated="${command:0:60}"
-            if [[ ${#command} -gt 60 ]]; then
-                truncated="${truncated}..."
+            # Extract just the program name and subcommand (first 2 non-flag words).
+            # e.g. "git log --oneline -3" → "git log"
+            #      "python3 -m pip install kokoro" → "python3 pip"
+            #      "npm install --save-dev foo" → "npm install"
+            words=()
+            for word in $command; do
+                [[ ${#words[@]} -ge 2 ]] && break
+                [[ "$word" == -* ]] && continue
+                words+=("$word")
+            done
+            # Commands without subcommands — only speak the program name.
+            case "${words[0]:-}" in
+                ls|cat|rm|cp|mv|mkdir|rmdir|touch|echo|printf|head|tail|sed|awk|grep|find|sort|wc|chmod|chown|kill|pkill|sleep|curl|wget|which|env|export|source|cd|pwd|date|whoami|hostname|uname|df|du|tar|zip|unzip|man|less|more|diff|patch|xargs|tee|tr|cut|ln|test|true|false|time|nohup|timeout|mkfifo)
+                    words=("${words[0]}")
+                    ;;
+            esac
+            if [[ ${#words[@]} -gt 0 ]]; then
+                desc="Running ${words[*]}"
+            else
+                desc="Running a command"
             fi
-            desc="Running: $truncated"
         else
             desc="Running a command"
         fi
