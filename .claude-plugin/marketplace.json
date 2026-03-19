@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Voice output for Claude Code using Kokoro TTS",
-    "version": "0.2.0"
+    "version": "0.1.0"
   },
   "plugins": [
     {
