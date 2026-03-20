@@ -69,6 +69,7 @@ claude --plugin-dir /path/to/claude-code-narrator
 | `/narrator:on` | Enable voice output (auto-installs Kokoro on first run) |
 | `/narrator:off` | Disable voice output |
 | `/narrator:cast [voice]` | Change voice or list available voices |
+| `/narrator:speed [value]` | Change speech speed (0.5–2.0, default 1.1) |
 | `/narrator:speak [text]` | Speak on demand, even if narrator is off |
 | `/narrator:hush` | Silence all current and queued speech |
 
@@ -104,6 +105,7 @@ You can override narrator settings per directory, which is useful when running m
 ```
 /narrator:on --local          # enable narrator in this directory only
 /narrator:cast --local am_adam  # use a different voice in this directory
+/narrator:speed --local 1.5    # use a different speed in this directory
 /narrator:off --local         # disable narrator in this directory only
 ```
 

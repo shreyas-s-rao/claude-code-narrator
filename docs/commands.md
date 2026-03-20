@@ -68,6 +68,30 @@ After switching, a test sentence is spoken in the new voice.
 
 ---
 
+## `/narrator:speed`
+
+Change the narrator speech speed.
+
+**Usage:**
+```
+/narrator:speed [value]
+```
+
+If no value is given, the current speed is shown and you're asked to pick a new one.
+
+Valid range: **0.5–2.0**. Default is **1.1**.
+
+After changing, a test sentence is spoken at the new speed so you can hear the difference.
+
+**Examples:**
+```
+/narrator:speed 1.5           # set speed to 1.5
+/narrator:speed 0.8 --local   # set local speed to 0.8
+/narrator:speed               # show current speed and prompt for new value
+```
+
+---
+
 ## `/narrator:speak`
 
 Speak text aloud on demand, regardless of whether narrator is currently enabled.
