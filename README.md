@@ -5,7 +5,7 @@ A Claude Code plugin that speaks responses aloud using [Kokoro](https://github.c
 ## Prerequisites
 
 - Python 3.9+ (tested on 3.13)
-- macOS with audio output (speakers or headphones)
+- macOS or Linux with audio output (speakers or headphones)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
 
 ## Installation
@@ -29,6 +29,12 @@ In Claude Code, run these slash commands:
    ```
    /reload-plugins
    ```
+
+> **Linux note:** If `/tmp` is a separate filesystem (tmpfs), plugin installation may fail with `EXDEV: cross-device link not permitted`. Fix by setting TMPDIR before launching Claude Code:
+> ```bash
+> mkdir -p ~/.cache/tmp && TMPDIR=~/.cache/tmp claude
+> ```
+> Then run the install commands above in that session. This is a [Claude Code platform limitation](https://github.com/anthropics/claude-code/issues/14799), not specific to this plugin.
 
 ### From local directory
 
