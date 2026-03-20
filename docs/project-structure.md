@@ -3,33 +3,44 @@
 ```
 claude-code-narrator/
 ├── .claude-plugin/
-│   └── plugin.json            # Plugin manifest
+│   ├── marketplace.json      # Marketplace distribution config
+│   └── plugin.json           # Plugin manifest (name, version, license)
+├── .claude/
+│   └── settings.local.json   # Local dev permissions
+├── commands/
+│   ├── cast.md               # /narrator:cast — change voice or speed
+│   ├── hush.md               # /narrator:hush — silence speech
+│   ├── off.md                # /narrator:off — disable narrator
+│   ├── on.md                 # /narrator:on — enable narrator
+│   └── speak.md              # /narrator:speak — on-demand speech
 ├── hooks/
-│   ├── hooks.json             # Hook registrations
+│   ├── hooks.json             # Hook registrations (Stop, PostToolUse, Notification)
 │   └── scripts/
-│       ├── kokoro-speak.py    # Core TTS engine (with auto-venv bootstrap)
-│       ├── speak-daemon.py    # Persistent Python daemon (keeps pipeline loaded)
-│       ├── speak-daemon.sh    # Bash wrapper to launch Python daemon
-│       ├── speak.sh           # Speech enqueuer (entry point)
-│       ├── speak-response.sh  # Stop hook (speaks responses)
-│       ├── speak-step.sh      # PostToolUse hook (speaks tool actions)
+│       ├── extract-command.sh     # Shared helper: Bash command → short spoken description
+│       ├── hush-on-input.sh       # UserPromptSubmit hook (auto-silence on input)
+│       ├── kokoro-speak.py        # Standalone TTS with auto-venv bootstrap
+│       ├── speak-daemon.py        # Persistent Python daemon (keeps pipeline loaded)
+│       ├── speak-daemon.sh        # Bash wrapper to launch Python daemon
 │       ├── speak-notification.sh  # Notification hook
-│       └── hush-on-input.sh      # UserPromptSubmit hook (auto-silence on input)
+│       ├── speak-response.sh      # Stop hook (speaks responses)
+│       ├── speak-step.sh          # PostToolUse hook (speaks tool actions + intermediate text)
+│       └── speak.sh               # Speech enqueuer (entry point, TTS text replacements)
 ├── skills/
-│   ├── on/SKILL.md            # /narrator:on — enable narrator
-│   ├── off/SKILL.md           # /narrator:off — disable narrator
-│   ├── cast/SKILL.md          # /narrator:cast — change voice
-│   ├── speak/SKILL.md         # /narrator:speak — on-demand speech
-│   └── hush/SKILL.md          # /narrator:hush — silence immediately
+│   ├── cast/SKILL.md          # Intent matching for voice/speed changes
+│   ├── hush/SKILL.md          # Intent matching for silencing
+│   ├── off/SKILL.md           # Intent matching for disabling
+│   ├── on/SKILL.md            # Intent matching for enabling
+│   └── speak/SKILL.md         # Intent matching for on-demand speech
 ├── tests/
 │   ├── run-all.sh                 # Run all test suites
-│   ├── test-dot-replacement.sh    # Tests for filename dot pronunciation
-│   └── test-command-extraction.sh # Tests for tool use command stripping
+│   ├── test-command-extraction.sh # Tests for tool use command stripping
+│   └── test-dot-replacement.sh    # Tests for filename dot pronunciation
 ├── docs/
 │   ├── architecture.md        # Architecture, state management, speech processing
 │   ├── commands.md            # Detailed command reference
 │   └── project-structure.md   # This file
 ├── .gitignore
+├── CLAUDE.md                  # Guidance for Claude Code
 ├── LICENSE
 └── README.md
 ```
