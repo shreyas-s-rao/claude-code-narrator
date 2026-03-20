@@ -91,7 +91,11 @@ Before text is sent to the TTS engine, `speak.sh` applies several transformation
 - **Paths and env vars** — `~/` → "home slash", `$HOME` → "home", `/dev/null` → "dev null"
 - **Shorthand** — `w/o` → "without", `w/` → "with"
 - **Technical terms** — `stderr` → "standard error", `stdout` → "standard output"
+- **Pronunciation fixes** — uppercase/mixed-case words that Kokoro mispronounces are replaced with phonetic equivalents (longer variants before shorter to avoid partial matches):
+  - Words → phonetic: `README` → "read me", `JSON` → "jason", `JSONL` → "jason L", `YAML` → "yammel", `TOML` → "tommel", `FIFO` → "fye foe", `SQL` → "sequel", `UUID` → "you you I D", `REPL` → "repple", `OAuth` → "oh auth", `CORS` → "cores", `echo` → "ekko"
+  - Spelled out: `API` → "A P I", `CLI` → "C L I", `URL` → "U R L", `HTTP` → "H T T P", `HTTPS` → "H T T P S", `NPM` → "N P M", `CSRF` → "C S R F", `CI/CD` → "C I C D", `PyPI` → "pie P I"
+  - Normalized case: `ENV` → "env", `STDIN` → "standard in", `WASM` → "wasm", `POSIX` → "posix"
 - **Markdown noise** — backticks, bold markers (`**`), and heading markers (`#`) are stripped
 - **Ellipsis** — `...` collapsed to a single space (avoids TTS stutter)
 - **Pipes** — freestanding `|` replaced with comma for a natural pause
-- **Command stripping** — Tool use descriptions have CLI flags and arguments stripped so only the program and subcommand are spoken (e.g. `git log --oneline -5` → "Running git log")
+- **Command stripping** — Tool use descriptions have CLI flags and arguments stripped so only the program and subcommand are spoken (e.g. `git log --oneline -5` → "Running git log."), with a trailing period to prevent Kokoro from clipping the last word
