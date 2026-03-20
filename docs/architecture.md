@@ -41,7 +41,16 @@ Skills modify this file; hook scripts read it. This file-based approach is neces
 
 ## Speech Text Processing
 
-Before text is sent to the TTS engine, `speak.sh` applies two transformations:
+Before text is sent to the TTS engine, `speak.sh` applies several transformations to make spoken output sound natural:
 
-- **Dot replacement** — Filename-like words have dots replaced with "dot" so TTS doesn't treat them as sentence boundaries (e.g. `settings.json` becomes "settings dot json"). Requires 2+ characters before the dot to avoid mangling abbreviations like "e.g." or "i.e.". A second pass catches chained extensions (e.g. `types.d.ts`).
-- **Command stripping** — Tool use descriptions have CLI flags and arguments stripped so only the program and subcommand are spoken (e.g. `git log --oneline -5` becomes "Running git log").
+- **Abbreviations** — `e.g.` → "for example", `i.e.` → "that is" (applied before dot replacement)
+- **Filename dots** — `settings.json` → "settings dot json", with chained extension support (`types.d.ts` → "types dot d dot ts")
+- **Arrows and operators** — `→` → "to", `=>` / `->` → "arrow", `!=` → "not equal", `==` → "equals", `<=` / `>=` → "less/greater or equal"
+- **Logical operators** — `&&` → "and", `||` → "or"
+- **Paths and env vars** — `~/` → "home slash", `$HOME` → "home", `/dev/null` → "dev null"
+- **Shorthand** — `w/o` → "without", `w/` → "with"
+- **Technical terms** — `stderr` → "standard error", `stdout` → "standard output"
+- **Markdown noise** — backticks, bold markers (`**`), and heading markers (`#`) are stripped
+- **Ellipsis** — `...` collapsed to a single space (avoids TTS stutter)
+- **Pipes** — freestanding `|` replaced with comma for a natural pause
+- **Command stripping** — Tool use descriptions have CLI flags and arguments stripped so only the program and subcommand are spoken (e.g. `git log --oneline -5` → "Running git log")
