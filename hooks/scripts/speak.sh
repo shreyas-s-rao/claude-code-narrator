@@ -86,6 +86,39 @@ text="${text// w\// with }"
 text="${text//stderr/standard error}"
 text="${text//stdout/standard output}"
 
+# Pronunciation fixes — all-caps or mixed-case words Kokoro mangles
+# Longer variants must come before shorter ones (JSONL before JSON, HTTPS before HTTP, etc.)
+text=$(printf '%s\n' "$text" | sed -E '
+    s/README/read me/gi
+    s/JSONL/jason L/gi
+    s/JSON/jason/gi
+    s/YAML/yammel/gi
+    s/TOML/tommel/gi
+    s/FIFO/fye foe/gi
+    s/STDIN/standard in/gi
+    s/HTTPS/H T T P S/g
+    s/HTTP/H T T P/g
+    s/APIs/A P I s/g
+    s/API/A P I/g
+    s/CLI/C L I/g
+    s/SQL/sequel/gi
+    s/NPM/N P M/g
+    s/URLs/U R L s/g
+    s/URL/U R L/g
+    s/ENV/env/g
+    s/REPL/repple/g
+    s/UUID/you you I D/gi
+    s/PyPI/pie P I/g
+    s/OAuth/oh auth/gi
+    s/CSRF/C S R F/g
+    s/CORS/cores/g
+    s/WASM/wasm/g
+    s/POSIX/posix/g
+    s/CI\/CD/C I C D/g
+    s/CICD/C I C D/g
+    s/\becho\b/ekko/gi
+')
+
 # Markdown noise — strip backticks, bold markers, heading markers
 text=$(printf '%s\n' "$text" | sed -E 's/`//g; s/\*\*//g; s/^#{1,6} //g')
 

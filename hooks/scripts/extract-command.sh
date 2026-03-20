@@ -18,8 +18,8 @@ extract_command_desc() {
             ;;
     esac
     if [[ ${#words[@]} -gt 0 ]]; then
-        COMMAND_DESC="Running ${words[*]}"
+        COMMAND_DESC="Running ${words[*]}."
     else
-        COMMAND_DESC="Running a command"
+        COMMAND_DESC="Running a command."
     fi
 }
