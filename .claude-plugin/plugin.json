@@ -6,6 +6,6 @@
     "name": "Shreyas Rao"
   },
   "repository": "https://github.com/shreyas-s-rao/claude-code-narrator",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "keywords": ["tts", "voice", "narrator", "kokoro", "accessibility"]
 }

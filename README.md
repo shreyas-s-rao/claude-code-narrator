@@ -103,4 +103,4 @@ bash tests/run-all.sh
 
 ## License
 
-Apache License 2.0
+MIT License
