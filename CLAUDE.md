@@ -38,12 +38,12 @@ Global state under `~/.claude-code-narrator/`:
 
 Per-directory local state (optional):
 - `<cwd>/.claude-code-narrator/config` — local overrides for enabled/voice/speed (missing keys fall back to global)
-- Created by `/narrator:on --local`, `/narrator:cast --local`, etc.
+- Created by `/narrator:on --local`, `/narrator:cast --local`, `/narrator:speed --local`, etc.
 
 ### Plugin structure
 
-- `commands/` — slash command definitions (`/narrator:on`, `/narrator:off`, etc.) with step-by-step instructions for Claude to execute
-- `skills/` — SKILL.md files that match user intent phrases (e.g. "change voice", "be quiet") and map to the same operations as commands
+- `commands/` — slash command definitions (`/narrator:on`, `/narrator:off`, `/narrator:cast`, `/narrator:speed`, `/narrator:speak`, `/narrator:hush`) with step-by-step instructions for Claude to execute
+- `skills/` — SKILL.md files that match user intent phrases (e.g. "change voice", "be quiet", "talk faster") and map to the same operations as commands
 - `hooks/hooks.json` — declares which Claude Code events trigger which scripts
 - `hooks/scripts/` — all executable scripts (bash + python)
 
@@ -58,9 +58,9 @@ Per-directory local state (optional):
 
 ### Text-to-speech pipeline
 
-`speak.sh` applies TTS-friendly replacements before enqueuing: dot expansion for filenames, arrow/operator symbols to words, markdown noise removal, abbreviation expansion. These replacements live in `speak.sh` around line 52-96. State resolution (local→global) and JSON FIFO output are at the end of the script.
+`speak.sh` applies TTS-friendly replacements before enqueuing: dot expansion for filenames, arrow/operator symbols to words, markdown noise removal, abbreviation expansion, and pronunciation fixes for uppercase/mixed-case words Kokoro mangles (README, JSON, API, etc.). These replacements live in `speak.sh` around line 52-130. State resolution (local→global) and JSON FIFO output are at the end of the script.
 
-`speak-step.sh` uses `extract-command.sh` (sourced function) to convert tool commands into short spoken descriptions (e.g. `git log --oneline -3` → "Running git log").
+`speak-step.sh` uses `extract-command.sh` (sourced function) to convert tool commands into short spoken descriptions (e.g. `git log --oneline -3` → "Running git log."). Descriptions end with a trailing period to prevent Kokoro from clipping the last word.
 
 `speak-step.sh` also parses the Claude Code transcript JSONL (`$TRANSCRIPT_PATH`) to find and speak intermediate text blocks between tool calls that have no dedicated hook.
 
