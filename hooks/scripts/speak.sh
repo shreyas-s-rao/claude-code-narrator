@@ -10,8 +10,24 @@ NARRATOR_DIR="$HOME/.claude-code-narrator"
 mkdir -p "$NARRATOR_DIR"
 FIFO="$NARRATOR_DIR/fifo"
 PID_FILE="$NARRATOR_DIR/daemon.pid"
-STATE_FILE="$NARRATOR_DIR/state"
+STATE_FILE="$NARRATOR_DIR/config"
+LOCAL_STATE_FILE="${NARRATOR_CWD:+${NARRATOR_CWD}/.claude-code-narrator/config}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Read a setting from the local state file, falling back to global state.
+# Usage: resolve_state <key> <default>
+resolve_state() {
+    local key="$1" default="$2" val=""
+    # Try local state first
+    if [[ -n "${LOCAL_STATE_FILE:-}" && -f "$LOCAL_STATE_FILE" ]]; then
+        val=$(grep -m1 "^${key}=" "$LOCAL_STATE_FILE" 2>/dev/null | cut -d= -f2 || echo "")
+    fi
+    # Fall back to global state
+    if [[ -z "$val" && -f "$STATE_FILE" ]]; then
+        val=$(grep -m1 "^${key}=" "$STATE_FILE" 2>/dev/null | cut -d= -f2 || echo "")
+    fi
+    printf '%s' "${val:-$default}"
+}
 
 FORCE=false
 
@@ -81,10 +97,7 @@ text=$(printf '%s\n' "$text" | sed -E 's/ \| /, /g')
 
 # Check enabled state (unless --force)
 if [[ "$FORCE" != "true" ]]; then
-    enabled="false"
-    if [[ -f "$STATE_FILE" ]]; then
-        enabled=$(grep -m1 '^enabled=' "$STATE_FILE" 2>/dev/null | cut -d= -f2 || echo "false")
-    fi
+    enabled=$(resolve_state "enabled" "false")
     if [[ "$enabled" != "true" ]]; then
         exit 0
     fi
@@ -101,6 +114,10 @@ fi
 
 LOCK_DIR="$NARRATOR_DIR/daemon.lock"
 if [[ "$daemon_running" != "true" ]]; then
+    # Clean up stale lock from a previous daemon that was killed externally
+    if [[ -d "$LOCK_DIR" ]]; then
+        rmdir "$LOCK_DIR" 2>/dev/null || true
+    fi
     # Use mkdir as an atomic lock to prevent concurrent daemon starts
     if mkdir "$LOCK_DIR" 2>/dev/null; then
         trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
@@ -136,11 +153,20 @@ if [[ "$daemon_running" != "true" ]]; then
     fi
 fi
 
-# Write text to FIFO (with timeout in case daemon died)
+# Resolve voice and speed for this utterance
+voice=$(resolve_state "voice" "af_heart")
+speed=$(resolve_state "speed" "1.1")
+
+# Build JSON message with per-utterance settings
+json_msg=$(printf '{"text":"%s","voice":"%s","speed":%s}' \
+    "$(printf '%s' "$text" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g' | tr '\n' ' ')" \
+    "$voice" "$speed")
+
+# Write JSON to FIFO (with timeout in case daemon died)
 if command -v timeout >/dev/null 2>&1; then
-    timeout 5 bash -c 'printf "%s\n" "$1" > "$2"' -- "$text" "$FIFO" 2>/dev/null || true
+    timeout 5 bash -c 'printf "%s\n" "$1" > "$2"' -- "$json_msg" "$FIFO" 2>/dev/null || true
 else
-    printf '%s\n' "$text" > "$FIFO" &
+    printf '%s\n' "$json_msg" > "$FIFO" &
     write_pid=$!
     { sleep 5; kill "$write_pid" 2>/dev/null; } &
     killer_pid=$!

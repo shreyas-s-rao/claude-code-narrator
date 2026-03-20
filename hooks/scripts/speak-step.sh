@@ -11,6 +11,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Read hook input
 HOOK_INPUT=$(cat)
 
+# Extract cwd for per-directory config
+export NARRATOR_CWD=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.cwd // ""')
+
 TOOL_NAME=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.tool_name // ""')
 TOOL_INPUT=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.tool_input // ""')
 TOOL_USE_ID=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.tool_use_id // ""')

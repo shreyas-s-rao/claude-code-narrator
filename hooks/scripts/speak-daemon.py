@@ -9,9 +9,10 @@ import sys
 import os
 import signal
 import time
+import json
 
 NARRATOR_DIR = os.path.expanduser('~/.claude-code-narrator')
-STATE_FILE = os.path.join(NARRATOR_DIR, 'state')
+STATE_FILE = os.path.join(NARRATOR_DIR, 'config')
 PID_FILE = os.path.join(NARRATOR_DIR, 'daemon.pid')
 
 
@@ -102,11 +103,28 @@ def main():
                 continue
 
             try:
-                voice = os.environ.get('CLAUDE_VOICE') or read_state('voice', 'af_heart')
-                speed = float(os.environ.get('CLAUDE_VOICE_SPEED') or read_state('speed', '1.1'))
+                # Parse JSON lines for per-utterance voice/speed.
+                # Plain text lines (backward compat) fall back to global state.
+                utterance_text = line
+                utterance_voice = None
+                utterance_speed = None
+                if line.startswith('{'):
+                    try:
+                        msg = json.loads(line)
+                        utterance_text = msg.get('text', line)
+                        utterance_voice = msg.get('voice')
+                        utterance_speed = msg.get('speed')
+                    except json.JSONDecodeError:
+                        pass  # treat as plain text
+
+                if not utterance_text.strip():
+                    continue
+
+                voice = utterance_voice or os.environ.get('CLAUDE_VOICE') or read_state('voice', 'af_heart')
+                speed = float(utterance_speed if utterance_speed is not None else (os.environ.get('CLAUDE_VOICE_SPEED') or read_state('speed', '1.1')))
 
                 audio_chunks = []
-                for gs, ps, audio in pipeline(line, voice=voice, speed=speed):
+                for gs, ps, audio in pipeline(utterance_text, voice=voice, speed=speed):
                     if audio is not None:
                         audio_chunks.append(audio)
 

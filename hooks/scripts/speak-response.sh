@@ -9,6 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Read hook input
 HOOK_INPUT=$(cat)
 
+# Extract cwd for per-directory config
+export NARRATOR_CWD=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.cwd // ""')
+
 # Extract the assistant message directly from the hook payload
 LAST_TEXT=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.last_assistant_message // ""')
 

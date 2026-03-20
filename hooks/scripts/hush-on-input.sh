@@ -6,11 +6,19 @@
 
 NARRATOR_DIR="$HOME/.claude-code-narrator"
 PID_FILE="$NARRATOR_DIR/daemon.pid"
-STATE_FILE="$NARRATOR_DIR/state"
+STATE_FILE="$NARRATOR_DIR/config"
 
-# Only act if narrator is enabled
+# Extract cwd from hook JSON for per-directory config
+HOOK_INPUT=$(cat)
+NARRATOR_CWD=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.cwd // ""' 2>/dev/null || echo "")
+LOCAL_STATE_FILE="${NARRATOR_CWD:+${NARRATOR_CWD}/.claude-code-narrator/config}"
+
+# Only act if narrator is enabled (check local then global)
 enabled="false"
-if [[ -f "$STATE_FILE" ]]; then
+if [[ -n "${LOCAL_STATE_FILE:-}" && -f "$LOCAL_STATE_FILE" ]]; then
+    enabled=$(grep -m1 '^enabled=' "$LOCAL_STATE_FILE" 2>/dev/null | cut -d= -f2 || echo "")
+fi
+if [[ -z "$enabled" && -f "$STATE_FILE" ]]; then
     enabled=$(grep -m1 '^enabled=' "$STATE_FILE" 2>/dev/null | cut -d= -f2 || echo "false")
 fi
 [[ "$enabled" != "true" ]] && exit 0

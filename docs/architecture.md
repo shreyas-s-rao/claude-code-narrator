@@ -12,15 +12,17 @@ The speech daemon keeps the Kokoro TTS pipeline loaded in memory. After a ~10s c
 ## How It Works
 
 1. **Hooks** fire on Claude Code events (response complete, tool used, notification)
-2. **Hook scripts** extract relevant text and pipe it to `speak.sh`
-3. **speak.sh** checks if narrator is enabled, starts the daemon if needed, and writes text to a FIFO queue
+2. **Hook scripts** extract relevant text and the session's `cwd` from the hook JSON, then pipe text to `speak.sh` with `NARRATOR_CWD` set
+3. **speak.sh** resolves enabled/voice/speed by checking the local state file (`<cwd>/.claude-code-narrator`) then the global one (`~/.claude-code-narrator/state`), starts the daemon if needed, and writes a JSON message to the FIFO queue
 4. **speak-daemon.sh** launches `speak-daemon.py`, the persistent Python daemon
-5. **speak-daemon.py** keeps the Kokoro pipeline loaded in memory, reads utterances from the FIFO sequentially (no overlap), and plays audio through your speakers
+5. **speak-daemon.py** keeps the Kokoro pipeline loaded in memory, reads JSON lines from the FIFO, uses the embedded voice/speed for each utterance, and plays audio through your speakers
 6. **kokoro-speak.py** is a standalone fallback TTS script (used for one-off speech when the daemon isn't running)
 
 ## State Management
 
-Narrator state is stored in `~/.claude-code-narrator/state`:
+### Global state
+
+Narrator state is stored in `~/.claude-code-narrator/config`:
 
 ```
 enabled=true
@@ -28,7 +30,46 @@ voice=af_heart
 speed=1.1
 ```
 
-Skills modify this file; hook scripts read it. This file-based approach is necessary because hooks run as subprocesses and cannot set environment variables in the parent process.
+### Per-directory (local) state
+
+A local config can be placed in any directory at `<cwd>/.claude-code-narrator/config`:
+
+```
+enabled=true
+voice=am_adam
+speed=1.0
+```
+
+The local file can contain any subset of keys. Missing keys fall back to the global state.
+
+### State resolution order
+
+For each setting (`enabled`, `voice`, `speed`):
+1. **Local** `<cwd>/.claude-code-narrator/config` — if the key is present, use it
+2. **Global** `~/.claude-code-narrator/config` — fallback
+
+This allows per-project voice/speed without duplicating all settings.
+
+Skills and commands modify config files; hook scripts read them. This file-based approach is necessary because hooks run as subprocesses and cannot set environment variables in the parent process.
+
+## FIFO Protocol
+
+Messages on the FIFO are newline-delimited JSON:
+
+```json
+{"text":"Hello world","voice":"af_heart","speed":1.1}
+```
+
+The daemon detects the format by checking if the line starts with `{`. Plain text lines are treated as a backward-compatible fallback (voice/speed read from global state).
+
+The special message `__QUIT__` shuts down the daemon cleanly.
+
+## Multi-Session Behavior
+
+- All sessions share one daemon and one FIFO (sequential playback, no overlap)
+- Each session's utterances carry their own voice/speed in the JSON message
+- If session A uses `am_adam` and session B uses `af_bella`, utterances interleave with correct voices
+- Hush (SIGUSR1) affects all sessions (acceptable — only one speaker at a time)
 
 ## What Gets Spoken
 

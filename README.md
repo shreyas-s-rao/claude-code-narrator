@@ -72,6 +72,8 @@ claude --plugin-dir /path/to/claude-code-narrator
 | `/narrator:speak [text]` | Speak on demand, even if narrator is off |
 | `/narrator:hush` | Silence all current and queued speech |
 
+All commands accept `--local` to apply settings to the current directory only (see [Per-Directory Config](#per-directory-config)).
+
 ## Available Voices
 
 | Voice | Gender | Description |
@@ -94,6 +96,28 @@ claude --plugin-dir /path/to/claude-code-narrator
 | Final response | First ~1000 characters, ending at a sentence boundary |
 | Notification | Title and message from Claude Code notifications |
 | User input | Speech is automatically silenced when you type or click |
+
+## Per-Directory Config
+
+You can override narrator settings per directory, which is useful when running multiple Claude Code sessions with different voices.
+
+```
+/narrator:on --local          # enable narrator in this directory only
+/narrator:cast --local am_adam  # use a different voice in this directory
+/narrator:off --local         # disable narrator in this directory only
+```
+
+Local settings are stored in `<cwd>/.claude-code-narrator/config`. Only the keys you set locally are overridden — missing keys fall back to the global config at `~/.claude-code-narrator/config`.
+
+**Add the local config file to your `.gitignore`** so it's not committed:
+
+```bash
+echo .claude-code-narrator >> .gitignore
+```
+
+### Multi-Session Behavior
+
+All sessions share a single daemon and FIFO (sequential playback, no overlap). Each session's utterances carry their own voice and speed settings, so if session A uses `am_adam` and session B uses `af_bella`, utterances interleave with the correct voices.
 
 ## Testing
 

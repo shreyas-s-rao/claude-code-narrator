@@ -10,7 +10,7 @@ import os
 import subprocess
 
 NARRATOR_DIR = os.path.expanduser('~/.claude-code-narrator')
-STATE_FILE = os.path.join(NARRATOR_DIR, 'state')
+STATE_FILE = os.path.join(NARRATOR_DIR, 'config')
 VENV_DIR = os.path.join(os.path.expanduser('~'), '.claude-narrator-venv')
 VENV_PYTHON = os.path.join(VENV_DIR, 'bin', 'python3')
 
