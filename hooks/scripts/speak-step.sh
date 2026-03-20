@@ -15,6 +15,7 @@ TOOL_NAME=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.tool_name // ""')
 TOOL_INPUT=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.tool_input // ""')
 TOOL_USE_ID=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.tool_use_id // ""')
 TRANSCRIPT_PATH=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.transcript_path // ""')
+PERMISSION_MODE=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.permission_mode // ""')
 
 if [[ -z "$TOOL_NAME" ]]; then
     exit 0
@@ -84,6 +85,11 @@ case "$TOOL_NAME" in
         ;;
     Write)
         file_path=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
+        # In plan mode, speak the full plan file content
+        if [[ "$PERMISSION_MODE" == "plan" && "$file_path" == */.claude/plans/* && -f "$file_path" ]]; then
+            cat "$file_path" | bash "$SCRIPT_DIR/speak.sh"
+            exit 0
+        fi
         if [[ -n "$file_path" ]]; then
             desc="Writing file $(basename "$file_path")"
         else
@@ -92,6 +98,11 @@ case "$TOOL_NAME" in
         ;;
     Edit|MultiEdit)
         file_path=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
+        # In plan mode, speak the full plan file content
+        if [[ "$PERMISSION_MODE" == "plan" && "$file_path" == */.claude/plans/* && -f "$file_path" ]]; then
+            cat "$file_path" | bash "$SCRIPT_DIR/speak.sh"
+            exit 0
+        fi
         if [[ -n "$file_path" ]]; then
             desc="Editing file $(basename "$file_path")"
         else
@@ -126,6 +137,10 @@ case "$TOOL_NAME" in
                 kill -USR1 "$pid" 2>/dev/null || true
             fi
         fi
+        exit 0
+        ;;
+    ExitPlanMode|EnterPlanMode)
+        # Plan narration is handled by Write/Edit on the plan file — skip here.
         exit 0
         ;;
     Agent|Skill)
