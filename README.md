@@ -121,17 +121,65 @@ echo .claude-code-narrator >> .gitignore
 
 All sessions share a single daemon and FIFO (sequential playback, no overlap). Each session's utterances carry their own voice and speed settings, so if session A uses `am_adam` and session B uses `af_bella`, utterances interleave with the correct voices.
 
-## Testing
-
-```bash
-bash tests/run-all.sh
-```
-
 ## Documentation
 
 - [Architecture](docs/architecture.md) — pipeline diagram, state management, what gets spoken
 - [Commands](docs/commands.md) — detailed reference for each command
 - [Project Structure](docs/project-structure.md) — full directory tree with file descriptions
+
+## Development
+
+To work on the plugin locally, clone the repo and load it:
+
+```bash
+git clone https://github.com/shreyas-s-rao/claude-code-narrator
+```
+
+**Option 1:** Load directly (no install needed, good for quick iteration):
+
+```bash
+claude --plugin-dir /path/to/claude-code-narrator
+```
+
+**Option 2:** Install via local marketplace (persists across sessions):
+
+1. In Claude Code, run `/plugin marketplace add` and select **"Add from local path"**
+2. Enter the path to your clone
+3. Run `/plugin install narrator` then `/reload-plugins`
+
+Changes to hook scripts must be copied to the plugin cache (`~/.claude/plugins/cache/claude-code-narrator/narrator/<version>/`) for testing, since hooks run from the cache path, not the source repo. `/reload-plugins` does not refresh the cache unless the version changes.
+
+Run tests with:
+
+```bash
+bash tests/run-all.sh
+```
+
+Tests are plain bash scripts using an `assert_eq` pattern. New test files matching `tests/test-*.sh` are automatically picked up by `run-all.sh`.
+
+## Contributing
+
+Narrator is a personal hobby project, built and tested on one machine (Apple Silicon, macOS Sequoia, Python 3.13). It almost certainly has rough edges — things may break on different hardware, OS versions, or Python setups.
+
+Contributions are very welcome, including:
+
+- **Bug reports** — open an issue describing your setup (OS, Python version, audio hardware) and what went wrong
+- **Fixes** — PRs are welcome; keep changes small and focused
+- **New pronunciation fixes** — uppercase/mixed-case words that Kokoro mispronounces (see `speak.sh`)
+- **New voice support** — Kokoro supports more voices than the 8 listed; contributions to test and document them are welcome
+- **Better text processing** — improvements to the TTS text replacement pipeline in `speak.sh`
+
+### Things that are likely untested
+
+- Linux audio (PortAudio/sounddevice should work, but not verified beyond install)
+- Python versions below 3.11
+- Intel Macs
+- macOS versions before Sequoia
+- Non-English Kokoro voices
+- Running multiple daemons (only one daemon/FIFO is supported — all sessions share it)
+- Very long responses (speech is truncated at ~1000 characters for final responses)
+
+If something doesn't work, check whether the daemon is running (`cat ~/.claude-code-narrator/daemon.pid`) and try restarting it with `/narrator:hush` followed by any action that triggers speech.
 
 ## License
 
