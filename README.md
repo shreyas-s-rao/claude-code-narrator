@@ -16,9 +16,8 @@ In Claude Code, run these slash commands:
 
 1. Add the marketplace:
    ```
-   /plugin marketplace add
+   /plugin marketplace add shreyas-s-rao/claude-code-narrator
    ```
-   Select **"Add from GitHub"**, then enter: `shreyas-s-rao/claude-code-narrator`
 
 2. Install the plugin:
    ```
@@ -42,9 +41,8 @@ If you've cloned the repo locally:
 
 1. Add the marketplace:
    ```
-   /plugin marketplace add
+   /plugin marketplace add /path/to/claude-code-narrator
    ```
-   Select **"Add from local path"**, then enter the path to your clone
 
 2. Install and reload as above
 
@@ -143,9 +141,8 @@ claude --plugin-dir /path/to/claude-code-narrator
 
 **Option 2:** Install via local marketplace (persists across sessions):
 
-1. In Claude Code, run `/plugin marketplace add` and select **"Add from local path"**
-2. Enter the path to your clone
-3. Run `/plugin install narrator` then `/reload-plugins`
+1. In Claude Code, run `/plugin marketplace add /path/to/claude-code-narrator`
+2. Run `/plugin install narrator` then `/reload-plugins`
 
 Changes to hook scripts must be copied to the plugin cache (`~/.claude/plugins/cache/claude-code-narrator/narrator/<version>/`) for testing, since hooks run from the cache path, not the source repo. `/reload-plugins` does not refresh the cache unless the version changes.
 
