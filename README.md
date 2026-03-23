@@ -1,5 +1,7 @@
 # Narrator - Voice Output Plugin for Claude Code
 
+![Claude Code Narrator](assets/banner.png)
+
 A Claude Code plugin that speaks responses aloud using [Kokoro](https://github.com/hexgrad/kokoro) TTS, a local neural text-to-speech engine. No cloud APIs, no latency — everything runs on your machine.
 
 ## Prerequisites
