@@ -24,6 +24,11 @@ if [[ -e "$FIFO" && ! -p "$FIFO" ]]; then
 fi
 mkfifo "$FIFO" 2>/dev/null || true
 
+# Bootstrap venv if needed (first run — may take several minutes)
+if [[ ! -x "$VENV_PYTHON" ]]; then
+    python3 "$SCRIPT_DIR/ensure_venv.py" 2>"$NARRATOR_DIR/bootstrap.log" || true
+fi
+
 # Use venv python if available, otherwise system python3
 if [[ -x "$VENV_PYTHON" ]]; then
     PYTHON="$VENV_PYTHON"
