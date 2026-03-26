@@ -24,12 +24,19 @@ if [[ -e "$FIFO" && ! -p "$FIFO" ]]; then
 fi
 mkfifo "$FIFO" 2>/dev/null || true
 
-# Use venv python if available, otherwise system python3
-if [[ -x "$VENV_PYTHON" ]]; then
-    PYTHON="$VENV_PYTHON"
-else
-    PYTHON="python3"
+# Bootstrap venv if needed (first run — may take several minutes)
+if [[ ! -x "$VENV_PYTHON" ]]; then
+    if ! python3 "$SCRIPT_DIR/ensure_venv.py" 2>"$NARRATOR_DIR/bootstrap.log"; then
+        echo "Narrator venv bootstrap failed. See $NARRATOR_DIR/bootstrap.log" >&2
+        exit 1
+    fi
+    if [[ ! -x "$VENV_PYTHON" ]]; then
+        echo "Narrator venv bootstrap succeeded but python not found at $VENV_PYTHON" >&2
+        exit 1
+    fi
 fi
+
+PYTHON="$VENV_PYTHON"
 
 # Launch the Python daemon (keeps pipeline loaded, reads from FIFO)
 exec "$PYTHON" "$SCRIPT_DIR/speak-daemon.py" "$FIFO"
