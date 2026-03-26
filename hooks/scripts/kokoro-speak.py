@@ -11,9 +11,10 @@ import subprocess
 
 NARRATOR_DIR = os.path.expanduser('~/.claude-code-narrator')
 STATE_FILE = os.path.join(NARRATOR_DIR, 'config')
-VENV_DIR = os.path.join(os.path.expanduser('~'), '.claude-narrator-venv')
-VENV_PYTHON = os.path.join(VENV_DIR, 'bin', 'python3')
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+sys.path.insert(0, SCRIPT_DIR)
+from ensure_venv import ensure_venv, VENV_DIR, VENV_PYTHON
 
 
 def read_state(key, default):
@@ -27,14 +28,6 @@ def read_state(key, default):
     except FileNotFoundError:
         pass
     return default
-
-
-def ensure_venv():
-    """Bootstrap the narrator venv. Delegates to ensure_venv.py."""
-    subprocess.check_call(
-        [sys.executable, os.path.join(SCRIPT_DIR, 'ensure_venv.py')],
-        stderr=sys.stderr,
-    )
 
 
 def speak(text):

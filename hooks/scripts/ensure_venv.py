@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Bootstrap the narrator venv (~/.claude-narrator-venv) with Kokoro TTS dependencies.
 
-Can be run as a standalone script or called from other scripts via subprocess.
+Can be run as a standalone script or imported as a module.
 """
 
 import sys
