@@ -7,7 +7,7 @@ Hook fires → speak.sh → FIFO pipe → speak-daemon.sh → speak-daemon.py �
                               (sequential, no overlap)
 ```
 
-The speech daemon keeps the Kokoro TTS pipeline loaded in memory. After a ~10s cold start, each utterance synthesizes in under 50ms.
+The speech daemon keeps the Kokoro TTS pipeline loaded in memory. After a ~10s cold start it stays warm, so later utterances skip the load. Playback is streamed: Kokoro splits long text into chunks of up to ~510 phonemes (a few sentences), and each chunk plays as soon as it is ready while the next one synthesizes, so long text starts speaking after the first chunk and plays without gaps. The output stream opens when audio arrives and closes after a second of idle.
 
 ## How It Works
 
@@ -15,7 +15,7 @@ The speech daemon keeps the Kokoro TTS pipeline loaded in memory. After a ~10s c
 2. **Hook scripts** extract relevant text and the session's `cwd` from the hook JSON, then pipe text to `speak.sh` with `NARRATOR_CWD` set
 3. **speak.sh** resolves enabled/voice/speed by checking the local state file (`<cwd>/.claude-code-narrator`) then the global one (`~/.claude-code-narrator/state`), starts the daemon if needed, and writes a JSON message to the FIFO queue
 4. **speak-daemon.sh** launches `speak-daemon.py`, the persistent Python daemon
-5. **speak-daemon.py** keeps the Kokoro pipeline loaded in memory, reads JSON lines from the FIFO, uses the embedded voice/speed for each utterance, and plays audio through your speakers
+5. **speak-daemon.py** keeps the Kokoro pipeline loaded in memory, reads JSON lines from the FIFO, uses the embedded voice/speed for each utterance, and streams audio through your speakers (a synthesis thread queues chunks; a playback thread writes them back to back)
 6. **kokoro-speak.py** is a standalone fallback TTS script (used for one-off speech when the daemon isn't running)
 
 ## State Management

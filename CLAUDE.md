@@ -24,7 +24,7 @@ Hook fires → speak.sh → FIFO pipe → speak-daemon.sh → speak-daemon.py �
 - **Plugin hooks** (`hooks/hooks.json`) register for `Stop`, `PostToolUse`, and `Notification` events
 - Hook scripts extract text and the session's `cwd`, then pipe text to `speak.sh` with `NARRATOR_CWD` set
 - `speak.sh` is the central enqueuer: resolves local→global state, starts daemon if needed, writes JSON to FIFO
-- `speak-daemon.py` is a persistent Python process that keeps the Kokoro pipeline loaded in memory (~10s cold start, then <50ms per utterance), parsing per-utterance voice/speed from JSON messages
+- `speak-daemon.py` is a persistent Python process that keeps the Kokoro pipeline loaded in memory (~10s cold start), parsing per-utterance voice/speed from JSON messages; synthesis and playback run on separate threads, so each chunk plays as soon as it is ready
 - `kokoro-speak.py` is a standalone fallback for one-off speech
 
 ### State and runtime files
