@@ -92,6 +92,57 @@ After changing, a test sentence is spoken at the new speed so you can hear the d
 
 ---
 
+## `/narrator:verbosity`
+
+Choose which events the narrator speaks.
+
+**Usage:**
+```
+/narrator:verbosity [level]
+```
+
+If no level is given, the current level is shown and you're asked to pick a new one.
+
+| Level | What's spoken |
+|-------|---------------|
+| `minimal` | Tool descriptions only |
+| `normal` | Tool descriptions + final response |
+| `verbose` | Tool descriptions + text between tool calls + final response + notifications (default) |
+| `final` | Final response only |
+
+In plan mode, plan files are read aloud in full at every level except `minimal`.
+
+**Examples:**
+```
+/narrator:verbosity final            # only speak final responses
+/narrator:verbosity minimal --local  # only tool descriptions in this directory
+/narrator:verbosity                  # show current level and prompt for a new one
+```
+
+---
+
+## `/narrator:length`
+
+Choose how much of the final response is spoken.
+
+**Usage:**
+```
+/narrator:length [summary|full]
+```
+
+- `summary` (default) — the first ~1000 characters, ending at a sentence boundary
+- `full` — the whole response; `/narrator:hush` stops it at any point
+
+Plan-mode responses are always spoken in full.
+
+**Examples:**
+```
+/narrator:length full           # read long responses all the way through
+/narrator:length summary --local
+```
+
+---
+
 ## `/narrator:speak`
 
 Speak text aloud on demand, regardless of whether narrator is currently enabled.

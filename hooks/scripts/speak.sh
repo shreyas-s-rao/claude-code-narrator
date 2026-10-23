@@ -6,28 +6,12 @@
 
 set -euo pipefail
 
-NARRATOR_DIR="$HOME/.claude-code-narrator"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=hooks/scripts/narrator-state.sh
+source "$SCRIPT_DIR/narrator-state.sh"
 mkdir -p "$NARRATOR_DIR"
 FIFO="$NARRATOR_DIR/fifo"
 PID_FILE="$NARRATOR_DIR/daemon.pid"
-STATE_FILE="$NARRATOR_DIR/config"
-LOCAL_STATE_FILE="${NARRATOR_CWD:+${NARRATOR_CWD}/.claude-code-narrator/config}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Read a setting from the local state file, falling back to global state.
-# Usage: resolve_state <key> <default>
-resolve_state() {
-    local key="$1" default="$2" val=""
-    # Try local state first
-    if [[ -n "${LOCAL_STATE_FILE:-}" && -f "$LOCAL_STATE_FILE" ]]; then
-        val=$(grep -m1 "^${key}=" "$LOCAL_STATE_FILE" 2>/dev/null | cut -d= -f2 || echo "")
-    fi
-    # Fall back to global state
-    if [[ -z "$val" && -f "$STATE_FILE" ]]; then
-        val=$(grep -m1 "^${key}=" "$STATE_FILE" 2>/dev/null | cut -d= -f2 || echo "")
-    fi
-    printf '%s' "${val:-$default}"
-}
 
 FORCE=false
 

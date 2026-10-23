@@ -30,7 +30,7 @@ Hook fires → speak.sh → FIFO pipe → speak-daemon.sh → speak-daemon.py �
 ### State and runtime files
 
 Global state under `~/.claude-code-narrator/`:
-- `config` — enabled/disabled, voice, speed (file-based because hooks are subprocesses)
+- `config` — enabled/disabled, voice, speed, verbosity, length (file-based because hooks are subprocesses)
 - `fifo` — named pipe for speech queue (JSON lines with text/voice/speed)
 - `daemon.pid` — written by Python daemon AFTER pipeline is loaded (signals readiness)
 - `daemon.lock` — atomic mkdir lock to prevent concurrent daemon starts
@@ -42,7 +42,7 @@ Per-directory local state (optional):
 
 ### Plugin structure
 
-- `commands/` — slash command definitions (`/narrator:on`, `/narrator:off`, `/narrator:cast`, `/narrator:speed`, `/narrator:speak`, `/narrator:hush`) with step-by-step instructions for Claude to execute
+- `commands/` — slash command definitions (`/narrator:on`, `/narrator:off`, `/narrator:cast`, `/narrator:speed`, `/narrator:verbosity`, `/narrator:length`, `/narrator:speak`, `/narrator:hush`) with step-by-step instructions for Claude to execute
 - `skills/` — SKILL.md files that match user intent phrases (e.g. "change voice", "be quiet", "talk faster") and map to the same operations as commands
 - `hooks/hooks.json` — declares which Claude Code events trigger which scripts
 - `hooks/scripts/` — all executable scripts (bash + python)
@@ -51,9 +51,9 @@ Per-directory local state (optional):
 
 | Script | Hook event | Purpose |
 |--------|-----------|---------|
-| `speak-response.sh` | Stop | Speaks first ~1000 chars of final response |
-| `speak-step.sh` | PostToolUse | Speaks tool description + intermediate text blocks |
-| `speak-notification.sh` | Notification | Speaks notification title/message |
+| `speak-response.sh` | Stop | Speaks first ~1000 chars of final response (all of it with `length=full`); skipped at `minimal` |
+| `speak-step.sh` | PostToolUse | Speaks tool description + intermediate text blocks (text blocks at `verbose` only; nothing at `final`) |
+| `speak-notification.sh` | Notification | Speaks notification title/message (`verbose` only) |
 | `hush-on-input.sh` | UserPromptSubmit (user settings) | Silences speech when user types |
 
 ### Text-to-speech pipeline
@@ -69,6 +69,7 @@ Per-directory local state (optional):
 - **Never use `sed` to edit config files** — commands/skills instruct Claude to use Read + Edit tools instead
 - **`--force` flag** on `speak.sh` bypasses the enabled check (used by `/narrator:speak` for on-demand speech)
 - **`--local` flag** on commands creates per-directory config at `<cwd>/.claude-code-narrator/config`
+- **`narrator-state.sh`** holds `resolve_state` (local→global lookup) and `narrator_verbosity`; `speak.sh` and the hook scripts source it
 - **`NARRATOR_CWD`** env var is set by caller scripts from hook JSON's `cwd` field; `speak.sh` uses it to find local state
 - **FIFO protocol** is JSON lines (`{"text":"...","voice":"...","speed":1.1}`); plain text is backward-compatible fallback
 - **`$CLAUDE_PLUGIN_ROOT`** is set by Claude Code at runtime and points to the plugin cache, not this repo

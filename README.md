@@ -70,6 +70,8 @@ claude --plugin-dir /path/to/claude-code-narrator
 | `/narrator:off` | Disable voice output |
 | `/narrator:cast [voice]` | Change voice or list available voices |
 | `/narrator:speed [value]` | Change speech speed (0.5–2.0, default 1.1) |
+| `/narrator:verbosity [level]` | Choose what gets spoken: `minimal`, `normal`, `verbose` (default) or `final` |
+| `/narrator:length [value]` | Speak a `summary` of the final response (default) or the `full` response |
 | `/narrator:speak [text]` | Speak on demand, even if narrator is off |
 | `/narrator:hush` | Silence all current and queued speech |
 
@@ -94,9 +96,20 @@ All commands accept `--local` to apply settings to the current directory only (s
 |-------|---------------|
 | Tool use (Read, Write, Bash, etc.) | Short description, e.g. "Reading file settings dot json" |
 | Text between tool calls | The assistant's intermediate commentary |
-| Final response | First ~1000 characters, ending at a sentence boundary |
+| Final response | First ~1000 characters, ending at a sentence boundary (the whole response with `/narrator:length full`) |
 | Notification | Title and message from Claude Code notifications |
 | User input | Speech is automatically silenced when you type or click |
+
+`/narrator:verbosity` chooses which of these you hear:
+
+| Level | Tool use | Text between tool calls | Final response | Notification |
+|-------|:-:|:-:|:-:|:-:|
+| `minimal` | ✓ | | | |
+| `normal` | ✓ | | ✓ | |
+| `verbose` (default) | ✓ | ✓ | ✓ | ✓ |
+| `final` | | | ✓ | |
+
+In plan mode, plan files are read aloud in full at every level except `minimal`, which speaks the tool description instead.
 
 ## Per-Directory Config
 
@@ -106,6 +119,7 @@ You can override narrator settings per directory, which is useful when running m
 /narrator:on --local          # enable narrator in this directory only
 /narrator:cast --local am_adam  # use a different voice in this directory
 /narrator:speed --local 1.5    # use a different speed in this directory
+/narrator:verbosity --local final  # only speak final responses in this directory
 /narrator:off --local         # disable narrator in this directory only
 ```
 
@@ -176,7 +190,7 @@ Contributions are very welcome, including:
 - macOS versions before Sequoia
 - Non-English Kokoro voices
 - Running multiple daemons (only one daemon/FIFO is supported — all sessions share it)
-- Very long responses (speech is truncated at ~1000 characters for final responses)
+- Very long responses with `/narrator:length full` (the default speaks the first ~1000 characters)
 
 If something doesn't work, check whether the daemon is running (`cat ~/.claude-code-narrator/daemon.pid`) and try restarting it with `/narrator:hush` followed by any action that triggers speech.
 

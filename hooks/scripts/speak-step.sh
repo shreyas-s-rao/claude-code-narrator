@@ -24,11 +24,32 @@ if [[ -z "$TOOL_NAME" ]]; then
     exit 0
 fi
 
-# Narrate any preceding text block from the transcript.
+# shellcheck source=hooks/scripts/narrator-state.sh
+source "$SCRIPT_DIR/narrator-state.sh"
+VERBOSITY=$(narrator_verbosity)
+
+# A Write/Edit of a plan file in plan mode: the plan is read aloud in full
+# at every level except minimal, which speaks the tool description instead.
+is_plan_file_write() {
+    [[ "$PERMISSION_MODE" == "plan" ]] || return 1
+    case "$TOOL_NAME" in Write|Edit|MultiEdit) ;; *) return 1 ;; esac
+    local plan_path
+    plan_path=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
+    [[ "$plan_path" == */.claude/plans/* && -f "$plan_path" ]]
+}
+
+# At final verbosity no tool steps are spoken. Plan files still fall through
+# to be read aloud, and AskUserQuestion still falls through so it can hush
+# queued speech.
+if [[ "$VERBOSITY" == "final" && "$TOOL_NAME" != "AskUserQuestion" ]] && ! is_plan_file_write; then
+    exit 0
+fi
+
+# Narrate any preceding text block from the transcript (verbose only).
 # When Claude outputs text → tool_use, the text block has no hook.
 # We find the last unspoken text block in the transcript and speak it.
 SPOKEN_FILE="$HOME/.claude-code-narrator/last-spoken"
-if [[ -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
+if [[ "$VERBOSITY" == "verbose" && -n "$TRANSCRIPT_PATH" && -f "$TRANSCRIPT_PATH" ]]; then
     preceding_text=$(tail -60 "$TRANSCRIPT_PATH" | SPOKEN_FILE="$SPOKEN_FILE" python3 -c "
 import sys, json, os
 spoken_file = os.environ.get('SPOKEN_FILE', '')
@@ -88,8 +109,8 @@ case "$TOOL_NAME" in
         ;;
     Write)
         file_path=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
-        # In plan mode, speak the full plan file content
-        if [[ "$PERMISSION_MODE" == "plan" && "$file_path" == */.claude/plans/* && -f "$file_path" ]]; then
+        # In plan mode, speak the full plan file content (tool description only at minimal)
+        if [[ "$VERBOSITY" != "minimal" ]] && is_plan_file_write; then
             cat "$file_path" | bash "$SCRIPT_DIR/speak.sh"
             exit 0
         fi
@@ -101,8 +122,8 @@ case "$TOOL_NAME" in
         ;;
     Edit|MultiEdit)
         file_path=$(printf '%s\n' "$TOOL_INPUT" | jq -r '.file_path // ""' 2>/dev/null || echo "")
-        # In plan mode, speak the full plan file content
-        if [[ "$PERMISSION_MODE" == "plan" && "$file_path" == */.claude/plans/* && -f "$file_path" ]]; then
+        # In plan mode, speak the full plan file content (tool description only at minimal)
+        if [[ "$VERBOSITY" != "minimal" ]] && is_plan_file_write; then
             cat "$file_path" | bash "$SCRIPT_DIR/speak.sh"
             exit 0
         fi

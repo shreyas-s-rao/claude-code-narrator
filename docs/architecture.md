@@ -28,7 +28,11 @@ Narrator state is stored in `~/.claude-code-narrator/config`:
 enabled=true
 voice=af_heart
 speed=1.1
+verbosity=verbose
+length=summary
 ```
+
+`verbosity` and `length` are optional (defaults `verbose` and `summary`). The hook scripts read them through `resolve_state` in `hooks/scripts/narrator-state.sh`, which `speak.sh` also sources.
 
 ### Per-directory (local) state
 
@@ -75,10 +79,12 @@ The special message `__QUIT__` shuts down the daemon cleanly.
 
 | Event | What's spoken |
 |-------|--------------|
-| **Response complete** | First ~1000 characters of the assistant's reply (sentence-aligned) |
+| **Response complete** | First ~1000 characters of the assistant's reply (sentence-aligned); the whole reply with `length=full` |
 | **Tool use** | Short description: "Reading file X", "Running git log", etc. |
 | **Notification** | The notification title and message |
 | **User input** | Speech is automatically silenced (daemon killed, FIFO cleared) |
+
+The `verbosity` setting filters these: `minimal` speaks tool use only; `normal` adds the response; `verbose` (default) speaks everything, including text between tool calls; `final` speaks the response only.
 
 ## Speech Text Processing
 

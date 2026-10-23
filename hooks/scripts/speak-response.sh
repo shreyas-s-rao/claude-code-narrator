@@ -12,6 +12,14 @@ HOOK_INPUT=$(cat)
 # Extract cwd for per-directory config
 export NARRATOR_CWD=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.cwd // ""')
 
+# shellcheck source=hooks/scripts/narrator-state.sh
+source "$SCRIPT_DIR/narrator-state.sh"
+
+# The final response is not spoken at minimal verbosity.
+if [[ "$(narrator_verbosity)" == "minimal" ]]; then
+    exit 0
+fi
+
 # Extract the assistant message directly from the hook payload
 LAST_TEXT=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.last_assistant_message // ""')
 
@@ -46,8 +54,11 @@ fi
 # Check if in plan mode
 PERMISSION_MODE=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.permission_mode // ""')
 
-if [[ "$PERMISSION_MODE" == "plan" ]]; then
-    # Plan mode: speak full cleaned text
+# length=full speaks the whole response; summary (default) speaks the first ~1000 chars.
+LENGTH=$(narrator_length)
+
+if [[ "$PERMISSION_MODE" == "plan" || "$LENGTH" == "full" ]]; then
+    # Plan mode or length=full: speak full cleaned text
     printf '%s\n' "$CLEANED" | bash "$SCRIPT_DIR/speak.sh"
 else
     # Normal mode: first ~1000 chars, ending at sentence boundary

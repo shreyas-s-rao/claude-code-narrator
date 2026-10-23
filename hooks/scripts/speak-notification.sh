@@ -12,6 +12,14 @@ HOOK_INPUT=$(cat)
 # Extract cwd for per-directory config
 export NARRATOR_CWD=$(printf '%s\n' "$HOOK_INPUT" | jq -r '.cwd // ""')
 
+# shellcheck source=hooks/scripts/narrator-state.sh
+source "$SCRIPT_DIR/narrator-state.sh"
+
+# Notifications are spoken at verbose verbosity only.
+if [[ "$(narrator_verbosity)" != "verbose" ]]; then
+    exit 0
+fi
+
 MESSAGE=$(echo "$HOOK_INPUT" | jq -r '.message // ""')
 TITLE=$(echo "$HOOK_INPUT" | jq -r '.title // ""')
 
